@@ -98,6 +98,7 @@ function! g:SyntasticLoclist.getStatuslineFlag() abort " {{{2
             let style_warnings = self.styleWarnings()
             let style_errors = self.styleErrors()
             let pure_errors = self.pureErrors()
+            let pure_warnings = self.pureWarnings()
 
             let num_errors = len(errors)
             let num_warnings = len(warnings)
@@ -105,6 +106,7 @@ function! g:SyntasticLoclist.getStatuslineFlag() abort " {{{2
             let num_style_warnings = len(style_warnings)
             let num_style_errors = len(style_errors)
             let num_pure_errors = len(pure_errors)
+            let num_pure_warnings = len(pure_warnings)
 
             let output = self._stl_format
 
@@ -117,9 +119,11 @@ function! g:SyntasticLoclist.getStatuslineFlag() abort " {{{2
             "hide stuff wrapped in %B(...) unless there are both errors and warnings
             let output = substitute(output, '\m\C%B{\([^}]*\)}', (num_warnings && num_errors) ? '\1' : '' , 'g')
 
+            " hide %hSE, %hsW, hPE, hPW.
             let output = substitute(output, '\m\C%hSE{\([^}]*\)}', num_style_errors ? '\1' : '' , 'g')
             let output = substitute(output, '\m\C%hSW{\([^}]*\)}', num_style_warnings ? '\1' : '' , 'g')
             let output = substitute(output, '\m\C%hPE{\([^}]*\)}', num_pure_errors ? '\1' : '' , 'g')
+            let output = substitute(output, '\m\C%hPW{\([^}]*\)}', num_pure_warnings ? '\1' : '' , 'g')
 
             let flags = {
                 \ '%':  '%',
@@ -138,15 +142,19 @@ function! g:SyntasticLoclist.getStatuslineFlag() abort " {{{2
                 \ 'Sw': num_style_warnings,
                 \ 'Se': num_style_errors,
                 \ 'Pe': num_pure_errors,
+                \ 'Pw': num_pure_warnings,
                 \ 'nSw': (num_style_warnings ? fnamemodify( bufname(style_warnings[0]['bufnr']), ':t') : ''),
                 \ 'nSe': (num_style_errors ? fnamemodify( bufname(style_errors[0]['bufnr']), ':t') : ''),
                 \ 'nPe': (num_pure_errors ? fnamemodify( bufname(pure_errors[0]['bufnr']), ':t') : ''),
+                \ 'nPw': (num_pure_warnings ? fnamemodify( bufname(pure_warnings[0]['bufnr']), ':t') : ''),
                 \ 'pSw': (num_style_warnings ? fnamemodify( bufname(style_warnings[0]['bufnr']), ':p:~:.') : ''),
                 \ 'pSe': (num_style_errors ? fnamemodify( bufname(style_errors[0]['bufnr']), ':p:~:.') : ''),
                 \ 'pPe': (num_pure_errors ? fnamemodify( bufname(pure_errors[0]['bufnr']), ':p:~:.') : ''),
+                \ 'pPw': (num_pure_warnings ? fnamemodify( bufname(pure_warnings[0]['bufnr']), ':p:~:.') : ''),
                 \ 'fSw': (num_style_warnings ? style_warnings[0]['lnum'] : ''),
                 \ 'fSe': (num_style_errors ? style_errors[0]['lnum'] : ''),
-                \ 'fPe': (num_pure_errors ? pure_warnings[0]['lnum'] : '')}
+                \ 'fPe': (num_pure_errors ? pure_errors[0]['lnum'] : ''),
+                \ 'fPw': (num_pure_warnings ? pure_warnings[0]['lnum'] : '')}
 
             let output = substitute(output, '\v\C\%(-?\d*%(\.\d+)?)([npfSP][ew]|[NPFtew%]|[npf][SP][we])', '\=syntastic#util#wformat(submatch(1), flags[submatch(2)])', 'g')
 
@@ -260,9 +268,9 @@ function! g:SyntasticLoclist.styleWarnings() abort " {{{2
     return self._cachedStyleWarnings
 endfunction " }}}2
 
-" Pure errors are all the errors that don't have a style subtype
-" (ie: errors that aren't style errors.)
 function! g:SyntasticLoclist.pureErrors() abort " {{{2
+    " Pure errors are all the errors that don't have a style subtype
+    " (ie: errors that aren't style errors.)
     if !exists('self._cachedPureErrors')
         let self._cachedPureErrors =
             \ filter(copy(self.errors()),
@@ -271,6 +279,15 @@ function! g:SyntasticLoclist.pureErrors() abort " {{{2
     return self._cachedPureErrors
 endfunction " }}}2
 
+function! g:SyntasticLoclist.pureWarnings() abort " {{{2
+    " Warnings that aren't style warnings.
+    if !exists('self._cachedPureWarnings')
+        let self._cachedPureWarnings =
+            \ filter(copy(self.warnings()),
+            \ 'get(v:val, "subtype", "") !=? "Style"')
+    endif
+    return self._cachedPureWarnings
+endfunction
 
 " Legacy function.  Syntastic no longer calls it, but we keep it
 " around because other plugins (f.i. powerline) depend on it.
