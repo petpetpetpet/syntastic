@@ -641,6 +641,22 @@ magic flags are available to insert information:
     %fe - line number of first error
     %fw - line number of first warning
     %F  - line number of first warning or error
+    %Sw - number of style warnings
+    %Se - number of style errors
+    %Pe - number of pure (not style) errors
+    %Pw - number of pure warnings
+    %nSw - filename of the file containing the first style warning
+    %nSe - filename of the file containing the first style error
+    %nPe - filename of the file containing the first pure error
+    %nPw - filename of the file containing the first pure warning
+    %pSw - filename with path of file containing the first style warning
+    %pSe - filename with path of file containing the first style error
+    %pPe - filename with path of file containing the first pure error
+    %pPw - filename with path of file containing the first pure warning
+    %fSw - line number of first style warning
+    %fSe - line number of first style error
+    %fPe - line number of first pure error
+    %fPw - line number of first pure warning
 
 These flags accept width and alignment controls similar to the ones used by
 |'statusline'| flags:
@@ -654,6 +670,10 @@ Several additional flags are available to hide text under certain conditions:
     %W{...} - hide the text in the brackets unless there are warnings
     %B{...} - hide the text in the brackets unless there are both warnings AND
               errors
+    %hSE{...} - hide the text in the brackets unless there are style errors
+    %hSW{...} - hide the text in the brackets unless there are style warnings
+    %hPE{...} - hide the text in the brackets unless there are pure errors
+    %hPW{...} - hide the text in the brackets unless there are pure warnings
 These flags can't be nested.
 
 Example: >
